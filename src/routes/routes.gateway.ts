@@ -32,7 +32,7 @@ export class RoutesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`Disconnected client ${client.id}`);
   }
 
-  @SubscribeMessage(RouteEvent.USER_JOIN)
+  @SubscribeMessage(RouteEvent.JOIN_USER)
   handleUserJoinToRoute(
     @MessageBody() userJoinDto: UserJoinDto,
     @ConnectedSocket() client: Socket,
