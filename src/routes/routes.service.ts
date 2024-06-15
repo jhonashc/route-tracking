@@ -14,12 +14,12 @@ export class RoutesService {
     let route = this.getRouteById(routeId);
 
     if (!route) {
-      route = { id: routeId, host: undefined, spectators: [] };
+      route = { id: routeId, host: undefined, users: [] };
 
       if (newUser.type === UserType.DRIVER) {
         route.host = newUser;
       } else {
-        route.spectators.push(newUser);
+        route.users.push(newUser);
       }
 
       this.activeRoutes.set(routeId, route);
@@ -30,16 +30,16 @@ export class RoutesService {
           route.host = newUser;
         }
       } else {
-        const spectatorIndex = route.spectators.findIndex(
-          (spectator) => spectator.id === newUser.id,
+        const userIndex = route.users.findIndex(
+          (user) => user.id === newUser.id,
         );
 
-        if (spectatorIndex !== -1) {
-          route.spectators[spectatorIndex].socket.disconnect();
-          route.spectators.splice(spectatorIndex, 1);
+        if (userIndex !== -1) {
+          route.users[userIndex].socket.disconnect();
+          route.users.splice(userIndex, 1);
         }
 
-        route.spectators.push(newUser);
+        route.users.push(newUser);
       }
     }
 
