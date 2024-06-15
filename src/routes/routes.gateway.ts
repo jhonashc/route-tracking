@@ -30,6 +30,7 @@ export class RoutesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     console.log(`Disconnected client ${client.id}`);
+    this.routesService.handleDisconnection(client.id);
   }
 
   @SubscribeMessage(RouteEvent.JOIN_USER)
@@ -63,9 +64,7 @@ export class RoutesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       if (route.host) {
         // Notify the driver in the route room that the student or spectator has joined
-        route.host.socket.broadcast
-          .to(routeRoom)
-          .emit(selectedRouteEvent, userJoinDto);
+        route.host.socket.emit(selectedRouteEvent, userJoinDto);
       }
     }
   }
