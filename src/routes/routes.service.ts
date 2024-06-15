@@ -11,39 +11,44 @@ export class RoutesService {
   private activeRoutes: Map<string, Route> = new Map();
 
   addUserToRoute(routeId: string, newUser: ConnectedUser): Route {
-    let route = this.getRouteById(routeId);
+    // Retrieve the route by ID, or create a new one if it doesn't exist
+    const route = this.getRouteById(routeId) || {
+      id: routeId,
+      host: undefined,
+      users: [],
+    };
 
-    if (!route) {
-      route = { id: routeId, host: undefined, users: [] };
-
-      if (newUser.type === UserType.DRIVER) {
-        route.host = newUser;
-      } else {
-        route.users.push(newUser);
-      }
-
-      this.activeRoutes.set(routeId, route);
-    } else {
-      if (newUser.type === UserType.DRIVER) {
-        if (route.host?.id === newUser.id) {
+    if (newUser.type === UserType.DRIVER) {
+      // If the new user is a driver
+      if (route.host) {
+        if (route.host.id === newUser.id) {
+          // If the current driver is the same, disconnect the current driver's socket
           route.host.socket.disconnect();
-          route.host = newUser;
         }
-      } else {
-        const userIndex = route.users.findIndex(
-          (user) => user.id === newUser.id,
-        );
-
-        if (userIndex !== -1) {
-          route.users[userIndex].socket.disconnect();
-          route.users.splice(userIndex, 1);
-        }
-
-        route.users.push(newUser);
       }
+      // Assign the new driver
+      route.host = newUser;
+    } else {
+      // If the new user is a student or spectator
+      const existingUserIndex = route.users.findIndex(
+        (user) => user.id === newUser.id,
+      );
+
+      if (existingUserIndex !== -1) {
+        // Disconnect the existing student's or spectator's socket
+        route.users[existingUserIndex].socket.disconnect();
+        // Remove the existing student or spectator
+        route.users.splice(existingUserIndex, 1);
+      }
+
+      // Add the new student or spectator
+      route.users.push(newUser);
     }
 
-    // TODO: This is a temporary
+    // Save the updated route in activeRoutes
+    this.activeRoutes.set(routeId, route);
+
+    // TODO: This is temporary
     console.log(
       'Current active routes',
       Array.from(this.activeRoutes.values()),
@@ -54,5 +59,33 @@ export class RoutesService {
 
   getRouteById(routeId: string): Route | undefined {
     return this.activeRoutes.get(routeId);
+  }
+
+  handleDisconnection(socketId: string): void {
+    // Iterate over each route in activeRoutes
+    for (const route of this.activeRoutes.values()) {
+      // Check if the disconnected socket belongs to the host
+      if (route.host?.socket.id === socketId) {
+        route.host = undefined;
+        break;
+      }
+
+      // Find the index of the disconnected user in the users array
+      const userIndex = route.users.findIndex(
+        (user) => user.socket.id === socketId,
+      );
+
+      // If the user is found, remove them from the array
+      if (userIndex !== -1) {
+        route.users.splice(userIndex, 1);
+        break;
+      }
+    }
+
+    // TODO: This is temporary
+    console.log(
+      'Current active routes',
+      Array.from(this.activeRoutes.values()),
+    );
   }
 }
