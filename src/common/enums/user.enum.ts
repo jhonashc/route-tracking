@@ -1,5 +1,5 @@
 export enum UserType {
   DRIVER = 'driver',
-  SPECTOR = 'spector',
+  SPECTATOR = 'spectator',
   STUDENT = 'student',
 }
