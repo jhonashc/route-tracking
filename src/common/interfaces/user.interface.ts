@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 
-import { UserType } from '../types';
+import { UserType } from '../enums';
 
 export interface User {
   id: string;
