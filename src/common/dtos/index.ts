@@ -1,2 +1,2 @@
-export * from './location.dto';
+export * from './route.dto';
 export * from './user.dto';
