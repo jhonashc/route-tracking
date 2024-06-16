@@ -11,7 +11,7 @@ import { Server, Socket } from 'socket.io';
 
 import { UserType } from '../common/enums';
 
-import { UserJoinDto } from './dtos';
+import { StartRouteDto, UserJoinDto } from './dtos';
 
 import { RouteEvent } from './enums';
 
@@ -24,11 +24,11 @@ export class RoutesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(private readonly routesService: RoutesService) {}
 
-  handleConnection(client: Socket) {
+  handleConnection(client: Socket): void {
     console.log(`Connected client ${client.id}`);
   }
 
-  handleDisconnect(client: Socket) {
+  handleDisconnect(client: Socket): void {
     console.log(`Disconnected client ${client.id}`);
     this.routesService.handleDisconnection(client.id);
   }
@@ -37,7 +37,7 @@ export class RoutesGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleUserJoinToRoute(
     @MessageBody() userJoinDto: UserJoinDto,
     @ConnectedSocket() client: Socket,
-  ) {
+  ): void {
     const { routeId, user } = userJoinDto;
 
     const route = this.routesService.addUserToRoute(routeId, {
@@ -46,7 +46,7 @@ export class RoutesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
 
     // Create the route room name
-    const routeRoom: string = `route-${route.id}`;
+    const routeRoom = `route-${route.id}`;
 
     // Join the user to the route room
     client.join(routeRoom);
@@ -67,5 +67,19 @@ export class RoutesGateway implements OnGatewayConnection, OnGatewayDisconnect {
         route.host.socket.emit(selectedRouteEvent, userJoinDto);
       }
     }
+  }
+
+  @SubscribeMessage(RouteEvent.START_ROUTE)
+  handleStartRoute(
+    @MessageBody() startRouteDto: StartRouteDto,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    // Create the route room name
+    const routeRoom = `route-${startRouteDto.routeId}`;
+
+    // Notifies all students and spectators in the room that the route has started
+    client.broadcast
+      .to(routeRoom)
+      .emit(RouteEvent.ROUTE_STARTED, startRouteDto);
   }
 }
