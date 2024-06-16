@@ -5,4 +5,6 @@ export enum RouteEvent {
   STUDENT_JOINED = 'route:student-joined',
   START_ROUTE = 'route:start',
   ROUTE_STARTED = 'route:started',
+  LOCATION_UPDATE = 'route:location-update',
+  BROADCAST_LOCATION = 'route:broadcast-location',
 }
