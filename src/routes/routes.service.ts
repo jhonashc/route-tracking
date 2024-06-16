@@ -62,27 +62,28 @@ export class RoutesService {
   }
 
   handleDisconnection(socketId: string): void {
-    // Iterate over each route in activeRoutes
-    for (const route of this.activeRoutes.values()) {
-      // Check if the disconnected socket belongs to the host
+    for (const [routeId, route] of this.activeRoutes.entries()) {
+      // If the disconnected socket belongs to the host
       if (route.host?.socket.id === socketId) {
         route.host = undefined;
-        break;
+      } else {
+        // If the disconnected socket belongs to a user
+        const userIndex = route.users.findIndex(
+          (user) => user.socket.id === socketId,
+        );
+
+        if (userIndex !== -1) {
+          route.users.splice(userIndex, 1);
+        }
       }
 
-      // Find the index of the disconnected user in the users array
-      const userIndex = route.users.findIndex(
-        (user) => user.socket.id === socketId,
-      );
-
-      // If the user is found, remove them from the array
-      if (userIndex !== -1) {
-        route.users.splice(userIndex, 1);
-        break;
+      // If there is no host and no users, delete the route from activeRoutes
+      if (!route.host && route.users.length === 0) {
+        this.activeRoutes.delete(routeId);
       }
     }
 
-    // TODO: This is temporary
+    // TODO: This is a temporary log
     console.log(
       'Current active routes',
       Array.from(this.activeRoutes.values()),
