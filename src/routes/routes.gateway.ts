@@ -11,7 +11,7 @@ import { Server, Socket } from 'socket.io';
 
 import { UserType } from '../common/enums';
 
-import { StartRouteDto, UserJoinDto } from './dtos';
+import { LocationUpdateDto, StartRouteDto, UserJoinDto } from './dtos';
 
 import { RouteEvent } from './enums';
 
@@ -81,5 +81,19 @@ export class RoutesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.broadcast
       .to(routeRoom)
       .emit(RouteEvent.ROUTE_STARTED, startRouteDto);
+  }
+
+  @SubscribeMessage(RouteEvent.LOCATION_UPDATE)
+  handleLocationUpdate(
+    @MessageBody() locationUpdateDto: LocationUpdateDto,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    // Create the route room name
+    const routeRoom = `route-${locationUpdateDto.routeId}`;
+
+    // Notify all students and spectators in the room that the route has updated its location
+    client.broadcast
+      .to(routeRoom)
+      .emit(RouteEvent.BROADCAST_LOCATION, locationUpdateDto);
   }
 }
