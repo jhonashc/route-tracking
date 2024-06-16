@@ -3,4 +3,6 @@ export enum RouteEvent {
   DRIVER_JOINED = 'route:driver-joined',
   SPECTATOR_JOINED = 'route:spectator-joined',
   STUDENT_JOINED = 'route:student-joined',
+  START_ROUTE = 'route:start',
+  ROUTE_STARTED = 'route:started',
 }
