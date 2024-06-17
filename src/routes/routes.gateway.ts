@@ -20,7 +20,7 @@ import { RoutesService } from './routes.service';
 @WebSocketGateway({ cors: true, namespace: 'routes' })
 export class RoutesGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  public server: Server;
+  private server: Server;
 
   constructor(private readonly routesService: RoutesService) {}
 
@@ -65,6 +65,12 @@ export class RoutesGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (route.host) {
         // Notify the driver in the route room that the student or spectator has joined
         route.host.socket.emit(selectedRouteEvent, userJoinDto);
+
+        // Notifiy Notify the driver with all connected users
+        route.host.socket.emit(
+          RouteEvent.GET_CONNECTED_USERS,
+          this.routesService.getUsersByRouteId(route.id),
+        );
       }
     }
   }

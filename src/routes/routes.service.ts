@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { UserType } from '../common/enums';
 
-import { ConnectedUser } from '../common/interfaces';
+import { ConnectedUser, User } from '../common/interfaces';
 
 import { Route } from './interfaces';
 
@@ -45,7 +45,7 @@ export class RoutesService {
       route.users.push(newUser);
     }
 
-    // Save the updated route in activeRoutes
+    // Save the updated route
     this.activeRoutes.set(routeId, route);
 
     // TODO: This is temporary
@@ -59,6 +59,15 @@ export class RoutesService {
 
   getRouteById(routeId: string): Route | undefined {
     return this.activeRoutes.get(routeId);
+  }
+
+  // TODO: Create a mapper
+  getUsersByRouteId(routeId: string): User[] | undefined {
+    return this.getRouteById(routeId)?.users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      type: user.type,
+    }));
   }
 
   handleDisconnection(socketId: string): void {
@@ -77,7 +86,7 @@ export class RoutesService {
         }
       }
 
-      // If there is no host and no users, delete the route from activeRoutes
+      // If there is no host and no users, delete the route
       if (!route.host && route.users.length === 0) {
         this.activeRoutes.delete(routeId);
       }
